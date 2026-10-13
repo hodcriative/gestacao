@@ -12,7 +12,7 @@ Sparkles,
 Users,
 X,
 } from 'lucide-react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import AuthPage from './AuthPage'
 import './App.css'
 
@@ -82,11 +82,11 @@ onClick={() => setMenuOpen(!menuOpen)}
   <a href="#recursos" onClick={closeMenu}>Funcionalidades</a>
   <a href="#jornada" onClick={closeMenu}>A jornada</a>
 
-<a href="/login" onClick={closeMenu}>Entrar</a>
+<Link to="/login" onClick={closeMenu}>Entrar</Link>
 
-  <a className="nav-cta" href="/cadastro" onClick={closeMenu}>
+  <Link className="nav-cta" to="/cadastro" onClick={closeMenu}>
     Começar agora <ArrowRight size={16} />
-  </a>
+  </Link>
 </nav>
 </header>
 
@@ -290,9 +290,9 @@ onClick={() => setMenuOpen(!menuOpen)}
             Cada dia é parte de algo extraordinário.<br />
             Façam dessa jornada uma lembrança para a vida inteira.
           </p>
-          <a className="button button-light" href="/cadastro">
+          <Link className="button button-light" to="/cadastro">
             Vamos começar <Heart size={17} />
-          </a>
+          </Link>
           <span className="cta-bottom-heart"><Heart size={20} /></span>
         </section>
       </main>
@@ -311,7 +311,7 @@ onClick={() => setMenuOpen(!menuOpen)}
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route
