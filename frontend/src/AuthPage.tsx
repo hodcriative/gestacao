@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
   Eye,
@@ -9,6 +9,8 @@ import {
   Mail,
   UserRound,
 } from 'lucide-react'
+import { ErroApi } from './api'
+import { useAuth } from './AuthContext'
 import './AuthPage.css'
 
 type AuthMode = 'login' | 'register' | 'forgot'
@@ -23,9 +25,9 @@ const pageContent = {
     title: 'Que bom ter você de volta.',
     description: 'Entre na sua conta para continuar vivendo essa jornada.',
     button: 'Entrar na minha conta',
-    footerText: 'Ainda não tem uma conta?',
-    footerLink: 'Criar minha conta',
-    footerHref: '/cadastro',
+    footerText: 'O acesso é apenas para quem recebeu um convite.',
+    footerLink: '',
+    footerHref: '',
   },
   register: {
     eyebrow: 'TUDO COMEÇA AQUI',
@@ -50,14 +52,40 @@ const pageContent = {
 function AuthPage({ mode }: AuthPageProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [notice, setNotice] = useState('')
+  const [sending, setSending] = useState(false)
   const content = pageContent[mode]
+  const { usuario, entrar } = useAuth()
+  const navigate = useNavigate()
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  // Quem já está logado vai direto para o painel
+  if (usuario && mode === 'login') return <Navigate to="/painel" replace />
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    setNotice(
-      'Esta tela ainda não está conectada ao servidor. A autenticação real será habilitada após a integração com o backend.',
-    )
+    if (mode !== 'login') {
+      setNotice(
+        'Por enquanto, a recuperação de senha é feita por quem administra o app. Peça a ele para redefinir a sua senha.',
+      )
+      return
+    }
+
+    const dados = new FormData(event.currentTarget)
+    const email = String(dados.get('email') ?? '')
+    const senha = String(dados.get('password') ?? '')
+
+    setSending(true)
+    setNotice('')
+    try {
+      await entrar(email, senha)
+      navigate('/painel', { replace: true })
+    } catch (erro) {
+      setNotice(
+        erro instanceof ErroApi ? erro.message : 'Algo deu errado. Tente novamente.',
+      )
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -182,8 +210,8 @@ function AuthPage({ mode }: AuthPageProps) {
               </div>
             )}
 
-            <button className="auth-submit" type="submit">
-              {content.button}
+            <button className="auth-submit" type="submit" disabled={sending}>
+              {sending ? 'Entrando…' : content.button}
             </button>
 
             {notice && (
@@ -195,7 +223,9 @@ function AuthPage({ mode }: AuthPageProps) {
 
           <div className="auth-switch">
             <span>{content.footerText}</span>
-            <Link to={content.footerHref}>{content.footerLink}</Link>
+            {content.footerHref && (
+              <Link to={content.footerHref}>{content.footerLink}</Link>
+            )}
           </div>
 
           <p className="auth-privacy">

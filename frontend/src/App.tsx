@@ -12,8 +12,11 @@ Sparkles,
 Users,
 X,
 } from 'lucide-react'
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
 import AuthPage from './AuthPage'
+import AuthProvider from './AuthProvider'
+import Painel from './Painel'
+import RotaProtegida from './RotaProtegida'
 import './App.css'
 
 const features = [
@@ -84,7 +87,7 @@ onClick={() => setMenuOpen(!menuOpen)}
 
 <Link to="/login" onClick={closeMenu}>Entrar</Link>
 
-  <Link className="nav-cta" to="/cadastro" onClick={closeMenu}>
+  <Link className="nav-cta" to="/login" onClick={closeMenu}>
     Começar agora <ArrowRight size={16} />
   </Link>
 </nav>
@@ -290,7 +293,7 @@ onClick={() => setMenuOpen(!menuOpen)}
             Cada dia é parte de algo extraordinário.<br />
             Façam dessa jornada uma lembrança para a vida inteira.
           </p>
-          <Link className="button button-light" to="/cadastro">
+          <Link className="button button-light" to="/login">
             Vamos começar <Heart size={17} />
           </Link>
           <span className="cta-bottom-heart"><Heart size={20} /></span>
@@ -312,21 +315,28 @@ onClick={() => setMenuOpen(!menuOpen)}
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <AuthProvider>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route
           path="/login"
           element={<AuthPage mode="login" />}
         />
+        <Route path="/cadastro" element={<Navigate to="/login" replace />} />
         <Route
-          path="/cadastro"
-          element={<AuthPage mode="register" />}
+          path="/painel"
+          element={
+            <RotaProtegida>
+              <Painel />
+            </RotaProtegida>
+          }
         />
         <Route
           path="/recuperar-senha"
           element={<AuthPage mode="forgot" />}
         />
       </Routes>
+      </AuthProvider>
     </BrowserRouter>
   )
 }
